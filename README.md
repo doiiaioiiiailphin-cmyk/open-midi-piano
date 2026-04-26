@@ -88,6 +88,10 @@ C  C# D  D# E  F  F# G  G# A  A# B
 鼠标滚轮 缩放钢琴视角
 ```
 
+## 声明
+
+本项目代码由 AI 辅助生成（[OpenCode](https://opencode.ai) + GLM-5.1）。
+
 ## 许可证
 
 [GPL-3.0](LICENSE)
