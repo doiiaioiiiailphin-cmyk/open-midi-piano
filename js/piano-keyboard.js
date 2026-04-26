@@ -158,16 +158,16 @@ export class PianoKeyboard {
     for (let midi = startMidi; midi <= endMidi; midi++) {
       if (WHITE_NOTES.includes(midi % 12)) whiteCount++;
     }
-    const totalW = whiteCount * this.whiteKeyW;
-    this.camera.position.set(0, 20.25, 45);
+    
+    // Zoom only affects camera distance now
+    this.camera.position.set(0, 20.25 / this.zoom, 45 / this.zoom);
     this.camera.lookAt(0, 0, 3);
 
-    const newH = Math.round(420 * this.zoom);
-    this.container.style.height = newH + 'px';
-    const w = this.container.clientWidth;
-    this.camera.aspect = w / newH;
+    const w = this.container.clientWidth || 460;
+    const h = this.container.clientHeight || 340;
+    this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, newH);
+    this.renderer.setSize(w, h);
   }
 
   _createKeyMaterials(isBlack, noteName, keyBind, isCNote) {
