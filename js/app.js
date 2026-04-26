@@ -75,46 +75,42 @@ class App {
       li.dataset.index = i;
       const isMidi = song.type === 'midi';
       li.innerHTML = `
-        <div class="song-name">${song.name}</div>
-        <div class="song-artist">${song.artist}${isMidi ? ' · MIDI' : ''}</div>
-      `;
-      li.addEventListener('click', () => {
-        this._selectSong(i);
-        this._closeAllDrawers(); // Optional: close drawer on select
-      });
+        <span class="song-icon">${isMidi ? '&#9836;' : '&#9834;'}</span>
+        <div class="song-info">
+          <div class="song-name">${song.name}</div>
+          <div class="song-artist">${song.artist}${isMidi ? ' · MIDI' : ''}</div>
+        </div>
+        <span class="song-difficulty difficulty-${song.difficulty}">
+          ${song.difficulty === 'easy' ? '简单' : song.difficulty === 'medium' ? '中等' : '困难'}
+        </span>`;
+      li.addEventListener('click', () => this._selectSong(i));
       list.appendChild(li);
     });
   }
 
   async _selectSong(index) {
-    if (index < 0 || index >= SONGS.length) return;
     this.player.stop();
     this.selectedSongIndex = index;
     const song = SONGS[index];
     document.querySelectorAll('.song-item').forEach((el, i) => el.classList.toggle('active', i === index));
 
-    const titleEl = document.getElementById('current-song-title');
-    const artistEl = document.getElementById('current-song-artist');
-
-    titleEl.textContent = song.name;
-    artistEl.textContent = song.artist || '未知艺术家';
-
     if (song.type === 'midi' && !song.data) {
-      artistEl.textContent = '加载 MIDI 数据中...';
+      const display = document.getElementById('note-display');
+      display.textContent = `正在加载 ${song.name}...`;
       try {
         const resp = await fetch(song.url);
         if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
         song.data = parseMidi(await resp.arrayBuffer());
-        artistEl.textContent = song.artist || '未知艺术家';
       } catch (e) {
         console.error('MIDI load failed:', e);
-        artistEl.textContent = 'MIDI 加载失败';
+        document.getElementById('note-display').textContent = `加载失败: ${song.name}`;
         return;
       }
     }
 
     this.player.loadSong(song);
     this._handlePlayState({ playing: false, paused: false, song });
+    document.getElementById('note-display').textContent = `已选择: ${song.name} - ${song.artist}`;
 
     if (song.data && song.data.instruments) {
       this._preloadInstruments(song.data);
@@ -130,66 +126,28 @@ class App {
     const needed = [...programs].filter(p => !this.loadedPrograms.has(p));
     if (needed.length === 0) return;
 
-    const artistEl = document.getElementById('current-song-artist');
-    const origArtist = artistEl.textContent;
+    const display = document.getElementById('note-display');
     let loaded = 0;
     for (const prog of needed) {
       const name = GM_PROGRAMS[prog] || `Program ${prog}`;
-      artistEl.textContent = `正在加载乐器: ${name}...`;
+      display.textContent = `正在加载乐器: ${name}...`;
       try {
         await this.engine.loadInstrument(prog);
       } catch (_) {}
       this.loadedPrograms.add(prog);
       loaded++;
     }
-    artistEl.textContent = origArtist;
-  }
-
-  _closeAllDrawers() {
-    document.querySelectorAll('.drawer').forEach(d => d.classList.add('hidden'));
-    document.querySelectorAll('.icon-btn').forEach(b => b.classList.remove('active'));
-  }
-
-  _toggleDrawer(btnId, drawerId) {
-    const drawer = document.getElementById(drawerId);
-    const btn = document.getElementById(btnId);
-    const isHidden = drawer.classList.contains('hidden');
-    
-    this._closeAllDrawers();
-    
-    if (isHidden) {
-      drawer.classList.remove('hidden');
-      btn.classList.add('active');
-    }
+    display.textContent = `乐器加载完成 (${needed.length} 个新乐器)`;
   }
 
   _bindUIEvents() {
     const btnToggle = document.getElementById('btn-toggle');
     const btnStop = document.getElementById('btn-stop');
-    const btnPrev = document.getElementById('btn-prev');
-    const btnNext = document.getElementById('btn-next');
 
     btnToggle.addEventListener('click', () => this.player.togglePlayPause());
     btnStop.addEventListener('click', () => this.player.stop());
-    
-    btnPrev.addEventListener('click', () => {
-      if (this.selectedSongIndex > 0) this._selectSong(this.selectedSongIndex - 1);
-    });
-    
-    btnNext.addEventListener('click', () => {
-      if (this.selectedSongIndex < SONGS.length - 1) this._selectSong(this.selectedSongIndex + 1);
-    });
 
-    document.getElementById('volume').addEventListener('input', (e) => {
-      this.engine.setVolume(e.target.value / 100);
-      const icon = document.querySelector('.icon-volume');
-      if (e.target.value == 0) {
-        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
-      } else {
-        icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
-      }
-    });
-
+    document.getElementById('volume').addEventListener('input', (e) => this.engine.setVolume(e.target.value / 100));
     document.getElementById('sound-mode').addEventListener('change', (e) => this.engine.setMode(e.target.value));
 
     const tempoSlider = document.getElementById('tempo');
@@ -199,26 +157,12 @@ class App {
     });
 
     document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT') { 
-        e.preventDefault(); 
-        this.player.togglePlayPause(); 
-      }
+      if (e.code === 'Space') { e.preventDefault(); this.player.togglePlayPause(); }
     });
 
-    // Drawer toggles
-    document.getElementById('toggle-playlist').addEventListener('click', () => this._toggleDrawer('toggle-playlist', 'playlist-drawer'));
-    document.getElementById('toggle-instruments').addEventListener('click', () => this._toggleDrawer('toggle-instruments', 'instrument-drawer'));
-    document.getElementById('toggle-settings').addEventListener('click', () => this._toggleDrawer('toggle-settings', 'settings-drawer'));
-    
-    document.querySelectorAll('.close-drawer').forEach(btn => {
-      btn.addEventListener('click', () => this._closeAllDrawers());
-    });
-
-    // Progress bar
-    const progressBar = document.querySelector('.progress-bar-container');
+    const progressBar = document.getElementById('progress-bar');
     const fill = document.getElementById('progress-fill');
-    const textCur = document.getElementById('time-current');
-    const textTot = document.getElementById('time-total');
+    const text = document.getElementById('progress-text');
 
     const fmtTime = (s) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
 
@@ -228,8 +172,7 @@ class App {
       fill.style.width = `${pct * 100}%`;
       if (this.player.song && this.player.song.data) {
         const total = this.player.song.data.duration * this.player.tempo;
-        textCur.textContent = fmtTime(pct * total);
-        textTot.textContent = fmtTime(total);
+        text.textContent = `${fmtTime(pct * total)} / ${fmtTime(total)}`;
       }
     };
 
@@ -259,6 +202,7 @@ class App {
 
   _handleNoteOn(midi) {
     this.engine.noteOn(midi, 90);
+    document.getElementById('note-display').innerHTML = `<span class="note-name">${midiToNoteName(midi)}</span>`;
     this.instPanel.setActive(['piano']);
   }
 
@@ -269,32 +213,28 @@ class App {
 
   _handlePlayState(state) {
     const btnToggle = document.getElementById('btn-toggle');
-    const iconPlay = btnToggle.querySelector('.icon-play');
-    const iconPause = btnToggle.querySelector('.icon-pause');
-    
+    const btnStop = document.getElementById('btn-stop');
+
     btnToggle.disabled = !state.song;
+    btnStop.disabled = !state.song || (!state.playing && !state.paused);
 
     if (state.playing) {
-      iconPlay.style.display = 'none';
-      iconPause.style.display = 'block';
+      btnToggle.innerHTML = '&#10074;&#10074; 暂停';
+      btnToggle.classList.add('playing');
     } else {
-      iconPlay.style.display = 'block';
-      iconPause.style.display = 'none';
+      btnToggle.innerHTML = '&#9654; 播放';
+      btnToggle.classList.remove('playing');
     }
   }
 
   _handleProgress(current, total) {
     if (this._draggingProgress) return;
     const fill = document.getElementById('progress-fill');
-    const textCur = document.getElementById('time-current');
-    const textTot = document.getElementById('time-total');
-    
+    const text = document.getElementById('progress-text');
     const pct = total > 0 ? (current / total) * 100 : 0;
     fill.style.width = `${pct}%`;
-    
     const fmt = (s) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
-    textCur.textContent = fmt(current);
-    textTot.textContent = fmt(total);
+    text.textContent = `${fmt(current)} / ${fmt(total)}`;
   }
 }
 
