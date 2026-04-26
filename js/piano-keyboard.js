@@ -20,7 +20,9 @@ for (const [k, v] of Object.entries(KEY_MAP_UPPER)) KEY_BIND_LABELS[v] = k.toUpp
 
 function _loadZoom() {
   const m = document.cookie.match(/pianoZoom=([^;]+)/);
-  return m ? parseFloat(m[1]) : 1.0;
+  if (!m) return 1.0;
+  const v = parseFloat(m[1]);
+  return (v > 0.3 && v < 3.0) ? v : 1.0;
 }
 
 function _saveZoom(v) {
@@ -101,7 +103,7 @@ export class PianoKeyboard {
 
   _initThree() {
     const w = this.container.clientWidth || 800;
-    const h = this.container.clientHeight || 260;
+    const h = this.container.clientHeight || 420;
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(22, w / h, 0.1, 200);
@@ -157,11 +159,10 @@ export class PianoKeyboard {
       if (WHITE_NOTES.includes(midi % 12)) whiteCount++;
     }
     const totalW = whiteCount * this.whiteKeyW;
-    this.camera.position.set(0, 10 + totalW * 0.06, 20 + totalW * 0.10);
+    this.camera.position.set(0, 20.25, 45);
     this.camera.lookAt(0, 0, 3);
 
-    const baseH = 260;
-    const newH = Math.round(baseH * this.zoom);
+    const newH = Math.round(420 * this.zoom);
     this.container.style.height = newH + 'px';
     const w = this.container.clientWidth;
     this.camera.aspect = w / newH;
@@ -385,7 +386,7 @@ export class PianoKeyboard {
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
       this.zoom *= e.deltaY > 0 ? 1.08 : 0.92;
-      this.zoom = Math.max(0.4, Math.min(3.0, this.zoom));
+      this.zoom = Math.max(0.5, Math.min(3.0, this.zoom));
       _saveZoom(this.zoom);
       this._updateCamera();
     }, { passive: false });
@@ -467,7 +468,43 @@ export class PianoKeyboard {
   _updateOctaveIndicator() {
     const startNote = midiToNoteName(this.startOctave * 12 + 12);
     const endNote = midiToNoteName((this.startOctave + this.octaveCount) * 12 + 12);
-    const indicator = document.getElementById('octave-indicator');
-    if (indicator) indicator.textContent = `${startNote} - ${endNote}`;
+    const old = this._octaveSprite;
+    if (old) {
+      this.keyGroup.remove(old);
+      if (old.material.map) old.material.map.dispose();
+      old.material.dispose();
+    }
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 64;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = 'rgba(30,30,46,0.85)';
+    const rx = 12;
+    ctx.beginPath();
+    ctx.moveTo(rx, 0); ctx.lineTo(512-rx, 0);
+    ctx.quadraticCurveTo(512, 0, 512, rx);
+    ctx.lineTo(512, 64-rx);
+    ctx.quadraticCurveTo(512, 64, 512-rx, 64);
+    ctx.lineTo(rx, 64);
+    ctx.quadraticCurveTo(0, 64, 0, 64-rx);
+    ctx.lineTo(0, rx);
+    ctx.quadraticCurveTo(0, 0, rx, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#a5b4fc';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(`${startNote} — ${endNote}`, 256, 32);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.minFilter = THREE.LinearFilter;
+    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+    const sprite = new THREE.Sprite(mat);
+    sprite.scale.set(12, 1.5, 1);
+    sprite.position.set(0, 8, -1.9);
+    this.keyGroup.add(sprite);
+    this._octaveSprite = sprite;
   }
 }

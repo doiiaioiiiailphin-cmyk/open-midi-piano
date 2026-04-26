@@ -165,7 +165,7 @@ input[type="range"]::-webkit-slider-thumb {
 .app-main {
   display: flex;
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .sidebar {
@@ -430,7 +430,7 @@ input[type="range"]::-webkit-slider-thumb {
   display: flex;
   flex-direction: column;
   background: linear-gradient(180deg, var(--bg-primary) 0%, #0d0d15 100%);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .piano-container {
@@ -440,25 +440,27 @@ input[type="range"]::-webkit-slider-thumb {
   align-items: center;
   justify-content: center;
   padding: 20px;
-  overflow-x: auto;
-  overflow-y: hidden;
+  overflow: visible;
   position: relative;
 }
 
 .octave-indicator {
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-muted);
-  margin-bottom: 12px;
+  margin-bottom: 2px;
+  margin-top: -20px;
   padding: 4px 12px;
   background: var(--bg-secondary);
   border-radius: var(--radius);
   border: 1px solid var(--border);
+  flex-shrink: 0;
 }
 
 .piano {
   width: 100%;
-  height: 260px;
+  height: 560px;
   position: relative;
+  transform: translateY(-102px);
 }
 
 .piano canvas {
@@ -556,6 +558,83 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 2px;
   width: 0%;
   transition: width 0.3s ease;
+}
+
+.player-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(15, 15, 23, 0.92);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--border);
+  padding: 8px 20px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 10;
+  flex-shrink: 0;
+}
+
+.player-bar-top {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 600px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.player-bar .progress-bar {
+  width: 100%;
+  max-width: 600px;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: 2px;
+  cursor: pointer;
+  position: relative;
+}
+
+.player-bar .progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.player-bar .progress-bar:hover .progress-fill {
+  background: #818cf8;
+}
+
+.player-bar .player-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.player-bar .tempo-control {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.player-bar .tempo-control input[type="range"] {
+  width: 80px;
+  height: 4px;
+}
+
+.player-bar .note-display {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.player-bar .note-display .note-name {
+  color: var(--accent-light);
+  font-weight: 600;
 }
 
 .instrument-panel {

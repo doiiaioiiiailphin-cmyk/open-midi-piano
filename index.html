@@ -45,68 +45,29 @@
           <h2>曲谱库</h2>
           <ul id="song-list" class="song-list"></ul>
         </div>
-        <div class="panel player-panel">
-          <h2>播放控制</h2>
-          <div class="player-controls">
-            <button id="btn-toggle" class="btn btn-primary" disabled>&#9654; 播放</button>
-            <button id="btn-stop" class="btn" disabled>&#9632; 停止</button>
-          </div>
-          <div class="progress-bar-container">
-            <div class="progress-bar" id="progress-bar">
-              <div class="progress-fill" id="progress-fill"></div>
-            </div>
-            <span id="progress-text">0:00 / 0:00</span>
-          </div>
-          <div class="control-group tempo-control">
-            <label>速度 <span id="tempo-value">100</span>%</label>
-            <input type="range" id="tempo" min="25" max="200" value="100">
-          </div>
-        </div>
-        <div class="panel help-panel">
-          <h2>键盘快捷键</h2>
-          <div class="help-content">
-            <p><strong>低音区 (C3-B3):</strong></p>
-            <div class="key-hint-row">
-              <span class="key-hint white">Z</span>
-              <span class="key-hint black">S</span>
-              <span class="key-hint white">X</span>
-              <span class="key-hint black">D</span>
-              <span class="key-hint white">C</span>
-              <span class="key-hint white">V</span>
-              <span class="key-hint black">G</span>
-              <span class="key-hint white">B</span>
-              <span class="key-hint black">H</span>
-              <span class="key-hint white">N</span>
-              <span class="key-hint black">J</span>
-              <span class="key-hint white">M</span>
-            </div>
-            <p><strong>高音区 (C4-B4):</strong></p>
-            <div class="key-hint-row">
-              <span class="key-hint white">Q</span>
-              <span class="key-hint black">2</span>
-              <span class="key-hint white">W</span>
-              <span class="key-hint black">3</span>
-              <span class="key-hint white">E</span>
-              <span class="key-hint white">R</span>
-              <span class="key-hint black">5</span>
-              <span class="key-hint white">T</span>
-              <span class="key-hint black">6</span>
-              <span class="key-hint white">Y</span>
-              <span class="key-hint black">7</span>
-              <span class="key-hint white">U</span>
-            </div>
-            <p><strong>其他:</strong></p>
-            <p>左右箭头: 切换八度 | 空格: 播放/暂停</p>
-          </div>
-        </div>
       </aside>
 
       <section class="piano-section">
         <div class="piano-container" id="piano-container">
-          <div class="octave-indicator" id="octave-indicator">C3 - B5</div>
           <div class="piano" id="piano"></div>
         </div>
-        <div class="note-display" id="note-display">按下琴键开始演奏</div>
+        <div class="player-bar" id="player-bar">
+          <div class="player-bar-top">
+            <span class="note-display" id="note-display">按下琴键开始演奏</span>
+            <span id="progress-text">0:00 / 0:00</span>
+          </div>
+          <div class="progress-bar" id="progress-bar">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+          <div class="player-controls">
+            <button id="btn-stop" class="btn" disabled>&#9198;</button>
+            <button id="btn-toggle" class="btn btn-primary" disabled>&#9654; 播放</button>
+            <div class="control-group tempo-control">
+              <span id="tempo-value">100</span>%
+              <input type="range" id="tempo" min="25" max="200" value="100">
+            </div>
+          </div>
+        </div>
       </section>
 
       <aside class="instrument-panel" id="instrument-panel">
@@ -128,6 +89,6 @@
     </div>
   </div>
 
-  <script type="module" src="js/app.js?v=3d5"></script>
+  <script type="module" src="js/app.js?v=3d7"></script>
 </body>
 </html>
