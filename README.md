@@ -90,7 +90,7 @@ C  C# D  D# E  F  F# G  G# A  A# B
 
 ## 声明
 
-本项目代码由 AI 辅助生成（[OpenCode](https://opencode.ai) + GLM-5.1）。
+本项目代码由 AI 辅助生成。
 
 ## 许可证
 
