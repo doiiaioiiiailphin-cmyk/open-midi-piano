@@ -1,6 +1,6 @@
 [package]
 name = "open-midi-piano"
-version = "1.0.0"
+version = "1.0.1"
 description = "Browser-based 3D piano player with MIDI playback and SoundFont audio"
 authors = ["Open MIDI Piano"]
 license = "GPL-3.0"

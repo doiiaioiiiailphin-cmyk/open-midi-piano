@@ -120,6 +120,7 @@ export class PianoKeyboard {
     this.keyStates = new Map();
     this.octaveOffset = 0;
     this.zoom = _loadZoom();
+    this.onAnimate = null;
 
     this.whiteKeyW = 2.2;
     this.whiteKeyH = 0.9;
@@ -353,6 +354,7 @@ export class PianoKeyboard {
         mesh.position.y = state.targetY;
       }
     }
+    if (this.onAnimate) this.onAnimate();
     this.renderer.render(this.scene, this.camera);
   }
 

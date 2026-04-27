@@ -4,6 +4,7 @@ import { SongPlayer } from './song-player.js';
 import { SONGS as BUILTIN_SONGS } from './song-data.js';
 import { parseMidi } from './midi-parser.js';
 import { InstrumentPanel } from './instrument-panel.js';
+import { ParticleFall } from './particle-fall.js';
 
 const DB_NAME = 'OpenMidiPiano';
 const DB_VERSION = 1;
@@ -75,6 +76,9 @@ class App {
     this.keyboard = new PianoKeyboard(document.getElementById('piano'));
     this.keyboard.onNoteOn = (midi) => this._handleNoteOn(midi);
     this.keyboard.onNoteOff = (midi) => this._handleNoteOff(midi);
+
+    this.particles = new ParticleFall(this.keyboard.scene);
+    this.keyboard.onAnimate = () => this.particles.update();
 
     this.instPanel = new InstrumentPanel(document.getElementById('instrument-icons'));
 
@@ -254,6 +258,15 @@ class App {
 
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Space' && e.target.tagName !== 'INPUT') { e.preventDefault(); this.player.togglePlayPause(); }
+    });
+
+    const particleToggle = document.getElementById('toggle-particles');
+    const saved = localStorage.getItem('particles');
+    if (saved === '1') { particleToggle.checked = true; this.particles.toggle(true); }
+    particleToggle.addEventListener('change', () => {
+      const on = particleToggle.checked;
+      this.particles.toggle(on);
+      localStorage.setItem('particles', on ? '1' : '0');
     });
 
     // Upload modal
