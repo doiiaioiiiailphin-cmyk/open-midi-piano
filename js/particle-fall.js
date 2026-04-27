@@ -6,10 +6,19 @@ export class ParticleFall {
     this.active = false;
     this._particles = [];
     this._getKeyPos = null;
-    this._fallDist = 7;
     this._lookAhead = 2.5;
     this._seenNotes = new Set();
     this._currentSec = 0;
+
+    this.clusterCount = 5;
+    this.spreadXY = 0.6;
+    this.size = 0.22;
+    this.opacity = 1.0;
+    this.offsetX = 0;
+    this.offsetY = 7;
+    this.offsetZ = 0;
+    this.color = '#818cf8';
+    this.scatterTimer = 0.15;
   }
 
   toggle(state) {
@@ -48,20 +57,38 @@ export class ParticleFall {
       const pos = this._getKeyPos(n.midi);
       if (!pos) continue;
 
-      const mat = new THREE.SpriteMaterial({
-        color: 0x818cf8, blending: THREE.AdditiveBlending,
-        depthWrite: false, transparent: true, opacity: 0.85,
-      });
-      const sprite = new THREE.Sprite(mat);
-      sprite.scale.set(0.22, 0.22, 1);
-      sprite.position.set(pos.x, pos.y + this._fallDist, pos.z);
-      this.scene.add(sprite);
+      const spawnDt = Math.max(dt, 0.05);
+      const baseX = pos.x + this.offsetX;
+      const baseY = pos.y + this.offsetY;
+      const baseZ = pos.z + this.offsetZ;
 
-      const spawnDt = Math.max(t - currentSec, 0.1);
-      this._particles.push({
-        sprite, midi: n.midi, targetY: pos.y,
-        spawnSec: currentSec, spawnDt, done: false
-      });
+      for (let i = 0; i < this.clusterCount; i++) {
+        const mat = new THREE.SpriteMaterial({
+          color: new THREE.Color(this.color),
+          blending: THREE.AdditiveBlending,
+          depthWrite: false,
+          transparent: true,
+          opacity: this.opacity,
+        });
+        const sprite = new THREE.Sprite(mat);
+        sprite.scale.set(this.size, this.size, 1);
+
+        const jitterX = (Math.random() - 0.5) * this.spreadXY;
+        const jitterY = (Math.random() - 0.5) * this.spreadXY;
+        const jitterZ = (Math.random() - 0.5) * this.spreadXY;
+        const delay = i * this.scatterTimer / this.clusterCount;
+
+        sprite.position.set(baseX + jitterX, baseY + jitterY, baseZ + jitterZ);
+        this.scene.add(sprite);
+
+        this._particles.push({
+          sprite, midi: n.midi,
+          targetY: pos.y,
+          spawnSec: currentSec + delay,
+          spawnDt: spawnDt - delay,
+          done: false,
+        });
+      }
       spawned++;
     }
   }
@@ -75,7 +102,7 @@ export class ParticleFall {
       if (p.done) { toRemove.push(i); continue; }
 
       const progress = Math.min((this._currentSec - p.spawnSec) / p.spawnDt, 1);
-      p.sprite.position.y = p.targetY + this._fallDist * (1 - progress);
+      p.sprite.position.y = p.targetY + this.offsetY * (1 - progress);
 
       if (progress >= 1) {
         p.sprite.position.y = p.targetY;
@@ -101,35 +128,41 @@ export class ParticleFall {
   }
 
   _flashBurst(p) {
-    this._burst(p.sprite.position);
+    for (let i = 0; i < 3; i++) {
+      const mat = new THREE.SpriteMaterial({
+        color: new THREE.Color(this.color),
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.6,
+      });
+      const sprite = new THREE.Sprite(mat);
+      const angle = (i / 3) * Math.PI * 2;
+      sprite.position.set(
+        p.sprite.position.x + Math.cos(angle) * 0.3,
+        p.sprite.position.y,
+        p.sprite.position.z + Math.sin(angle) * 0.3
+      );
+      sprite.scale.set(0.08, 0.08, 1);
+      this.scene.add(sprite);
+
+      let frame = 0;
+      const anim = () => {
+        frame++;
+        const s = 0.08 + frame * 0.1;
+        sprite.scale.set(s, s, 1);
+        sprite.material.opacity = Math.max(0, 0.6 - frame * 0.03);
+        if (sprite.material.opacity <= 0) {
+          this.scene.remove(sprite);
+          sprite.material.dispose();
+        } else {
+          requestAnimationFrame(anim);
+        }
+      };
+      anim();
+    }
 
     if (this.onHit) this.onHit(p.midi);
-  }
-
-  _burst(pos) {
-    const mat = new THREE.SpriteMaterial({
-      color: 0x818cf8, blending: THREE.AdditiveBlending,
-      depthWrite: false, transparent: true, opacity: 0.5,
-    });
-    const sprite = new THREE.Sprite(mat);
-    sprite.position.copy(pos);
-    sprite.scale.set(0.1, 0.1, 1);
-    this.scene.add(sprite);
-
-    let frame = 0;
-    const anim = () => {
-      frame++;
-      const s = 0.1 + frame * 0.12;
-      sprite.scale.set(s, s, 1);
-      sprite.material.opacity = Math.max(0, 0.5 - frame * 0.025);
-      if (sprite.material.opacity <= 0) {
-        this.scene.remove(sprite);
-        sprite.material.dispose();
-      } else {
-        requestAnimationFrame(anim);
-      }
-    };
-    anim();
   }
 
   dispose() {
