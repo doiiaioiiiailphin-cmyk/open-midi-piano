@@ -79,6 +79,12 @@ class App {
 
     this.particles = new ParticleFall(this.keyboard.scene);
     this.particles.setKeyPosFn((midi) => this.keyboard.getKeyWorldPosition(midi));
+    this.particles.setKeyDims({
+      whiteW: this.keyboard.whiteKeyW * 0.96,
+      blackW: this.keyboard.blackKeyW,
+      whiteD: this.keyboard.whiteKeyD,
+      blackD: this.keyboard.blackKeyD,
+    });
     this.particles.onHit = (midi) => {
       this.keyboard.highlightNote(midi);
       setTimeout(() => this.keyboard.unhighlightNote(midi), 80);
@@ -229,7 +235,7 @@ class App {
       const firstTime = song.data.notes[0].time;
       this.particles.startPreview(song.data.notes, firstTime);
       this.particles.onPreviewDone = () => {
-        this.player.play();
+        this.player.startFrom(firstTime);
       };
     } else {
       this.player.play();

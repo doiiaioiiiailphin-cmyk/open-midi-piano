@@ -34,6 +34,12 @@ export class SongPlayer {
     }
   }
 
+  startFrom(timeSeconds) {
+    if (!this.song || !this.song.data) return;
+    this.stop();
+    this._startFrom(timeSeconds);
+  }
+
   pause() {
     if (!this.isPlaying) return;
     this.isPaused = true;
