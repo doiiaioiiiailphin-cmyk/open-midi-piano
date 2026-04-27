@@ -78,7 +78,20 @@ class App {
     this.keyboard.onNoteOff = (midi) => this._handleNoteOff(midi);
 
     this.particles = new ParticleFall(this.keyboard.scene);
-    this.keyboard.onAnimate = () => this.particles.update();
+    this.particles.setKeyPosFn((midi) => this.keyboard.getKeyWorldPosition(midi));
+    this.particles.onHit = (midi) => {
+      this.keyboard.highlightNote(midi);
+      setTimeout(() => this.keyboard.unhighlightNote(midi), 80);
+    };
+
+    this.keyboard.onAnimate = () => {
+      if (this.player && this.player.song && this.player.song.data && this.player.isPlaying) {
+        const { current } = this.player.getProgress();
+        this.particles._currentSec = current;
+        this.particles.setNotes(this.player.song.data.notes, current);
+      }
+      this.particles.update();
+    };
 
     this.instPanel = new InstrumentPanel(document.getElementById('instrument-icons'));
 
@@ -172,6 +185,7 @@ class App {
     if (!confirm(`确定删除 "${song.name}" 吗？`)) return;
 
     this.player.stop();
+    this.particles.clear();
     await dbDelete(song.userSongId);
     this.songs.splice(index, 1);
     if (this.selectedSongIndex === index) this.selectedSongIndex = -1;
@@ -182,6 +196,7 @@ class App {
   async _selectSong(index) {
     if (index < 0 || index >= this.songs.length) return;
     this.player.stop();
+    this.particles.clear();
     this.selectedSongIndex = index;
     const song = this.songs[index];
     document.querySelectorAll('.song-item').forEach((el, i) => el.classList.toggle('active', i === index));
@@ -236,7 +251,7 @@ class App {
     const btnNext = document.getElementById('btn-next');
 
     btnToggle.addEventListener('click', () => this.player.togglePlayPause());
-    btnStop.addEventListener('click', () => this.player.stop());
+    btnStop.addEventListener('click', () => { this.player.stop(); this.particles.clear(); });
 
     btnPrev.addEventListener('click', () => {
       if (this.selectedSongIndex > 0) this._selectSong(this.selectedSongIndex - 1);

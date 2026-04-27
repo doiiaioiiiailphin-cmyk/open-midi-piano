@@ -518,6 +518,14 @@ export class PianoKeyboard {
     }
   }
 
+  getKeyWorldPosition(midi) {
+    const mesh = this.keyMeshes.get(midi);
+    if (!mesh) return null;
+    const pos = new THREE.Vector3(0, mesh.userData.baseY, 0);
+    mesh.localToWorld(pos);
+    return { x: pos.x, y: pos.y, z: pos.z };
+  }
+
   shiftOctave(delta) {
     const newStart = this.startOctave + delta;
     if (newStart < 0 || newStart + this.octaveCount > 8) return;
