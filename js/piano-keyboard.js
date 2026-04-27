@@ -522,8 +522,8 @@ export class PianoKeyboard {
     const mesh = this.keyMeshes.get(midi);
     if (!mesh) return null;
     const b = mesh.userData.isBlack;
-    const zFront = b ? -this.blackKeyD / 2 : -this.whiteKeyD / 2;
-    const pos = new THREE.Vector3(0, mesh.userData.baseY - 0.15, zFront);
+    const zBack = b ? this.blackKeyD / 2 : this.whiteKeyD / 2;
+    const pos = new THREE.Vector3(0, mesh.userData.baseY - 0.1, zBack + 0.5);
     mesh.localToWorld(pos);
     return { x: pos.x, y: pos.y, z: pos.z };
   }

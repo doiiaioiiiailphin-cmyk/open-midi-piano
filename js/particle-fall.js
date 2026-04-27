@@ -93,17 +93,16 @@ export class ParticleFall {
 
     const firstNotes = notes.filter(n => Math.abs(n.time - firstTime) < 0.001);
     for (const n of firstNotes) {
-      this._seenNotes.add(this._noteKey(n.midi, n.time));
+      const key = `${n.midi}|${n.time.toFixed(3)}`;
+      this._seenNotes.add(key);
       const pos = this._getKeyPos(n.midi);
       if (!pos) continue;
       const isBlack = [1, 3, 6, 8, 10].includes(n.midi % 12);
-      this._makeBlock(n.midi, n.time, n.duration, pos, isBlack);
+      this._addBlock(n.midi, n.time, n.duration, pos, isBlack);
     }
   }
 
-  _noteKey(midi, sec) { return `${midi}|${sec.toFixed(2)}`; }
-
-  _makeBlock(midi, noteTime, duration, pos, isBlack) {
+  _addBlock(midi, noteTime, duration, pos, isBlack) {
     const kw = isBlack ? 1.3 : 2.2;
     const h = Math.max(duration * FALL_SPEED, 0.3);
     const geo = new THREE.PlaneGeometry(kw, h);
@@ -112,7 +111,7 @@ export class ParticleFall {
     mesh.position.set(pos.x, pos.y, pos.z);
     if (this._keyRotation) mesh.quaternion.copy(this._keyRotation);
     this.scene.add(mesh);
-    this._blocks.push({ mesh, midi, noteTime, duration, keyY: pos.y, isBlack, kw, h });
+    this._blocks.push({ mesh, midi, noteTime, duration, keyY: pos.y, keyX: pos.x, keyZ: pos.z, isBlack, kw, h, pressed: false });
   }
 
   setNotes(notes, currentSec) {
@@ -120,27 +119,67 @@ export class ParticleFall {
     if (!this.active || !this._getKeyPos || this._previewing) return;
 
     let spawned = 0;
-    const uniq = new Set();
     for (const n of notes) {
       if (spawned >= 20) break;
       const dt = n.time - currentSec;
       if (dt <= 0 || dt > LOOK_AHEAD) continue;
-      const key = this._noteKey(n.midi, n.time);
-      if (uniq.has(key)) continue;
-      uniq.add(key);
+      const key = `${n.midi}|${n.time.toFixed(3)}`;
       if (this._seenNotes.has(key)) continue;
       this._seenNotes.add(key);
 
       const pos = this._getKeyPos(n.midi);
       if (!pos) continue;
       const isBlack = [1, 3, 6, 8, 10].includes(n.midi % 12);
-      this._makeBlock(n.midi, n.time, n.duration, pos, isBlack);
+      this._addBlock(n.midi, n.time, n.duration, pos, isBlack);
       spawned++;
     }
   }
 
-  _blockBottomY(b) {
-    return b.mesh.position.y - b.h / 2;
+  _emitBurst(b) {
+    for (let i = 0; i < 20; i++) {
+      const mat = new THREE.SpriteMaterial({
+        color: 0xa5b4fc,
+        blending: THREE.AdditiveBlending,
+        depthWrite: false,
+        transparent: true,
+        opacity: 0.7,
+      });
+      const sprite = new THREE.Sprite(mat);
+      sprite.position.set(b.keyX, b.keyY, b.keyZ);
+      sprite.scale.set(0.1, 0.1, 1);
+      this.scene.add(sprite);
+
+      const angle = (i / 20) * Math.PI * 2;
+      const speed = 0.02 + Math.random() * 0.04;
+      const vx = Math.cos(angle) * speed;
+      const vy = (Math.random() - 0.3) * speed * 0.5;
+      const vz = Math.sin(angle) * speed;
+
+      let f = 0;
+      const anim = () => {
+        f++;
+        sprite.position.x += vx;
+        sprite.position.y += vy;
+        sprite.position.z += vz;
+        const s = 0.1 + f * 0.06;
+        sprite.scale.set(s, s, 1);
+        sprite.material.opacity = Math.max(0, 0.7 - f * 0.025);
+        if (sprite.material.opacity <= 0) {
+          this.scene.remove(sprite);
+          sprite.material.dispose();
+        } else {
+          requestAnimationFrame(anim);
+        }
+      };
+      anim();
+    }
+  }
+
+  _updateBlockGeo(b, visibleH) {
+    const newH = Math.max(visibleH, 0.05);
+    b.mesh.geometry.dispose();
+    b.mesh.geometry = new THREE.PlaneGeometry(b.kw, newH);
+    b.mesh.position.y = b.keyY + newH / 2;
   }
 
   update() {
@@ -163,8 +202,22 @@ export class ParticleFall {
         const b = this._blocks[i];
         const dt = this._currentSec - b.noteTime;
         const bottomY = b.keyY - dt * FALL_SPEED;
-        b.mesh.position.y = bottomY + b.h / 2;
-        if (bottomY < b.keyY - 6) toRemove.push(i);
+
+        if (bottomY >= b.keyY) {
+          b.mesh.position.y = bottomY + b.h / 2;
+        } else {
+          if (!b.pressed) {
+            b.pressed = true;
+            this._emitBurst(b);
+          }
+          const penetration = b.keyY - bottomY;
+          const remainingH = Math.max(0, b.h - penetration);
+          if (remainingH <= 0.05) {
+            toRemove.push(i);
+          } else {
+            this._updateBlockGeo(b, remainingH);
+          }
+        }
       }
       for (let i = toRemove.length - 1; i >= 0; i--) {
         const idx = toRemove[i];
