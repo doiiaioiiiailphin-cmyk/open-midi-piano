@@ -274,6 +274,7 @@ class App {
     document.getElementById('upload-cancel').addEventListener('click', () => modal.classList.add('hidden'));
     modal.querySelector('.modal-backdrop').addEventListener('click', () => modal.classList.add('hidden'));
 
+    filePicker.addEventListener('click', () => fileInput.click());
     fileInput.addEventListener('change', () => {
       if (fileInput.files.length > 0) {
         const f = fileInput.files[0];
