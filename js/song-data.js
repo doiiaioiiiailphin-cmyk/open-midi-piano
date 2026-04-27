@@ -1,3 +1,7 @@
+// 所有曲目均为公共领域（Public Domain）古典音乐
+// 来源：https://github.com/TF2-Engineer/classical-midis
+// 注：canon.mid 和 bumblebee.mid 来自其他公共领域 MIDI 资源，作品本身为公共领域
+
 export const SONGS = [
   {
     name: '致爱丽丝', artist: '贝多芬',
