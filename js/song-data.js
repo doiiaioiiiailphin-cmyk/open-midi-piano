@@ -32,15 +32,15 @@ export const SONGS = [
     type: 'midi', url: './assets/midi/mozart_sonata_545_1.mid', data: null
   },
   {
-    name: '降E大调夜曲 Op.9 No.2', artist: '肖邦',
+    name: '前奏曲 No.2 Op.28', artist: '肖邦',
     type: 'midi', url: './assets/midi/chopin_nocturne_op9_2.mid', data: null
   },
   {
-    name: '音乐瞬间 D.760', artist: '舒伯特',
+    name: '流浪者幻想曲 D.760 第二乐章', artist: '舒伯特',
     type: 'midi', url: './assets/midi/schubert_moment_d760_2.mid', data: null
   },
   {
-    name: '抒情小品集', artist: '格里格',
+    name: '抒情小品 Op.42 No.2', artist: '格里格',
     type: 'midi', url: './assets/midi/grieg_morning.mid', data: null
   },
   {
