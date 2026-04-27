@@ -61,6 +61,38 @@ function _makeTopTexture(noteName, keyBind, isBlack, isCNote) {
   return tex;
 }
 
+function _makeEmissiveMap(noteName, keyBind, isBlack, isCNote) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(0, 0, 128, 512);
+
+  if (isCNote) {
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, 128, 512);
+  }
+
+  ctx.fillStyle = '#000000';
+  ctx.font = 'bold 40px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(noteName, 64, 440);
+
+  if (keyBind) {
+    ctx.fillStyle = '#000000';
+    ctx.font = 'bold 36px sans-serif';
+    ctx.fillText(keyBind, 64, 380);
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.minFilter = THREE.LinearFilter;
+  tex.magFilter = THREE.LinearFilter;
+  return tex;
+}
+
 function _makeSideTexture(isBlack) {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
@@ -83,6 +115,7 @@ export class PianoKeyboard {
     this.pressedKeys = new Set();
     this.mouseDown = false;
     this.currentMouseNote = null;
+    this._touchNotes = new Map();
     this.keyMeshes = new Map();
     this.keyStates = new Map();
     this.octaveOffset = 0;
@@ -172,11 +205,14 @@ export class PianoKeyboard {
 
   _createKeyMaterials(isBlack, noteName, keyBind, isCNote) {
     const topTex = _makeTopTexture(noteName, keyBind, isBlack, isCNote);
+    const emissiveMap = _makeEmissiveMap(noteName, keyBind, isBlack, isCNote);
     const sideColor = isBlack ? 0x111111 : 0xe5e4dd;
     const sideTex = _makeSideTexture(isBlack);
 
     const topMat = new THREE.MeshStandardMaterial({
-      map: topTex, roughness: isBlack ? 0.3 : 0.4, metalness: isBlack ? 0.1 : 0.0
+      map: topTex, emissiveMap: emissiveMap,
+      emissive: new THREE.Color(0x000000), emissiveIntensity: 0,
+      roughness: isBlack ? 0.3 : 0.4, metalness: isBlack ? 0.1 : 0.0
     });
     const frontMat = new THREE.MeshStandardMaterial({
       map: sideTex, color: isBlack ? 0x0f0f0f : 0xdddcd5,
@@ -240,7 +276,7 @@ export class PianoKeyboard {
       mesh.userData = { midi, isBlack: false, baseY: 0 };
       this.keyGroup.add(mesh);
       this.keyMeshes.set(midi, mesh);
-      this.keyStates.set(midi, { active: false, highlight: false });
+      this.keyStates.set(midi, { active: false, highlight: false, targetY: 0 });
       whiteMeshes.push({ midi, x: offsetX + wIdx * wGap });
       wIdx++;
     }
@@ -257,26 +293,18 @@ export class PianoKeyboard {
       const geo = new THREE.BoxGeometry(this.blackKeyW, this.blackKeyH, this.blackKeyD);
       const mats = this._createKeyMaterials(true, name, KEY_BIND_LABELS[midi], false);
       const mesh = new THREE.Mesh(geo, mats);
-      mesh.position.set(x, this.whiteKeyH / 2 + this.blackKeyH / 2, -(this.whiteKeyD - this.blackKeyD) / 2);
+      const baseY = this.whiteKeyH / 2 + this.blackKeyH / 2;
+      mesh.position.set(x, baseY, -(this.whiteKeyD - this.blackKeyD) / 2);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
-      mesh.userData = { midi, isBlack: true, baseY: this.whiteKeyH / 2 + this.blackKeyH / 2 };
+      mesh.userData = { midi, isBlack: true, baseY };
       this.keyGroup.add(mesh);
       this.keyMeshes.set(midi, mesh);
-      this.keyStates.set(midi, { active: false, highlight: false });
+      this.keyStates.set(midi, { active: false, highlight: false, targetY: baseY });
     }
 
     this._updateCamera();
     this._updateOctaveIndicator();
-  }
-
-  _setMeshColors(mesh, c0, c1, c2, c3, c4, c5) {
-    const mats = mesh.material;
-    const colors = [c0, c1, c2, c3, c4, c5];
-    for (let i = 0; i < 6; i++) {
-      mats[i].color.setHex(colors[i]);
-      if (mats[i].map) { mats[i].map = null; mats[i].needsUpdate = true; }
-    }
   }
 
   _restoreMeshMaterials(mesh) {
@@ -286,7 +314,7 @@ export class PianoKeyboard {
     const isC = midi % 12 === 0;
     const keyBind = KEY_BIND_LABELS[midi];
     const oldMats = mesh.material;
-    oldMats.forEach(m => { if (m.map) m.map.dispose(); m.dispose(); });
+    oldMats.forEach(m => { if (m.map) m.map.dispose(); if (m.emissiveMap) m.emissiveMap.dispose(); m.dispose(); });
     mesh.material = this._createKeyMaterials(isBlack, noteName, keyBind, isC);
   }
 
@@ -295,25 +323,36 @@ export class PianoKeyboard {
     const state = this.keyStates.get(midi);
     if (!mesh || !state) return;
 
-    const b = mesh.userData.isBlack;
+    const activeColor = '#6366f1';
+    const highlightColor = '#5ad651';
+    const intensity = 0.7;
+
     if (state.highlight) {
-      this._setMeshColors(mesh,
-        b?0x22c55e:0x86efac, b?0x22c55e:0x86efac, b?0x16a34a:0x22c55e,
-        b?0x15803d:0x16a34a, b?0x16a34a:0x22c55e, b?0x15803d:0x16a34a);
-      mesh.position.y = mesh.userData.baseY - 0.3;
+      mesh.material.forEach(m => { m.emissive.set(highlightColor); m.emissiveIntensity = intensity; });
+      state.targetY = mesh.userData.baseY - 0.3;
     } else if (state.active) {
-      this._setMeshColors(mesh,
-        b?0x4f46e5:0x818cf8, b?0x4f46e5:0x818cf8, b?0x3730a3:0x6366f1,
-        b?0x312e81:0x4f46e5, b?0x4f46e5:0x818cf8, b?0x312e81:0x4f46e5);
-      mesh.position.y = mesh.userData.baseY - 0.25;
+      mesh.material.forEach(m => { m.emissive.set(activeColor); m.emissiveIntensity = intensity; });
+      state.targetY = mesh.userData.baseY - 0.25;
     } else {
-      this._restoreMeshMaterials(mesh);
-      mesh.position.y = mesh.userData.baseY;
+      mesh.material.forEach(m => { m.emissive.setHex(0x000000); m.emissiveIntensity = 0; });
+      state.targetY = mesh.userData.baseY;
     }
   }
 
   _animate() {
     requestAnimationFrame(() => this._animate());
+    const lerp = 0.25;
+    for (const [midi, state] of this.keyStates) {
+      if (state.targetY === undefined) state.targetY = 0;
+      const mesh = this.keyMeshes.get(midi);
+      if (!mesh) continue;
+      const diff = state.targetY - mesh.position.y;
+      if (Math.abs(diff) > 0.001) {
+        mesh.position.y += diff * lerp;
+      } else {
+        mesh.position.y = state.targetY;
+      }
+    }
     this.renderer.render(this.scene, this.camera);
   }
 
@@ -367,11 +406,15 @@ export class PianoKeyboard {
         mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, this.camera);
         const hits = raycaster.intersectObjects(this.keyGroup.children);
-        if (hits.length > 0) this._triggerNoteOn(hits[0].object.userData.midi);
+        if (hits.length > 0) {
+          const midi = hits[0].object.userData.midi;
+          this._touchNotes.set(touch.identifier, midi);
+          this._triggerNoteOn(midi);
+        }
       }
     }, { passive: false });
 
-    canvas.addEventListener('touchend', (e) => {
+    canvas.addEventListener('touchmove', (e) => {
       e.preventDefault();
       for (const touch of e.changedTouches) {
         const rect = canvas.getBoundingClientRect();
@@ -379,9 +422,37 @@ export class PianoKeyboard {
         mouse.y = -((touch.clientY - rect.top) / rect.height) * 2 + 1;
         raycaster.setFromCamera(mouse, this.camera);
         const hits = raycaster.intersectObjects(this.keyGroup.children);
-        if (hits.length > 0) this._triggerNoteOff(hits[0].object.userData.midi);
+        const prev = this._touchNotes.get(touch.identifier);
+        const cur = hits.length > 0 ? hits[0].object.userData.midi : null;
+        if (cur !== prev) {
+          if (prev != null) this._triggerNoteOff(prev);
+          if (cur != null) this._triggerNoteOn(cur);
+          if (cur != null) this._touchNotes.set(touch.identifier, cur);
+          else this._touchNotes.delete(touch.identifier);
+        }
       }
     }, { passive: false });
+
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      for (const touch of e.changedTouches) {
+        const midi = this._touchNotes.get(touch.identifier);
+        if (midi != null) {
+          this._triggerNoteOff(midi);
+          this._touchNotes.delete(touch.identifier);
+        }
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchcancel', (e) => {
+      for (const touch of e.changedTouches) {
+        const midi = this._touchNotes.get(touch.identifier);
+        if (midi != null) {
+          this._triggerNoteOff(midi);
+          this._touchNotes.delete(touch.identifier);
+        }
+      }
+    });
 
     canvas.addEventListener('wheel', (e) => {
       e.preventDefault();
