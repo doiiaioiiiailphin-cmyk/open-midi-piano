@@ -93,6 +93,7 @@ export class ParticleFall {
 
     const firstNotes = notes.filter(n => Math.abs(n.time - firstTime) < 0.001);
     for (const n of firstNotes) {
+      this._seenNotes.add(this._noteKey(n.midi, n.time));
       const pos = this._getKeyPos(n.midi);
       if (!pos) continue;
       const isBlack = [1, 3, 6, 8, 10].includes(n.midi % 12);
@@ -154,9 +155,6 @@ export class ParticleFall {
       }
       if (progress >= 1) {
         this._previewing = false;
-        const ft = this._firstTime;
-        this.clear();
-        this._seenNotes.clear();
         if (this.onPreviewDone) this.onPreviewDone();
       }
     } else {
