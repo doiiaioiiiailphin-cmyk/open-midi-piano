@@ -197,9 +197,18 @@ input[type="range"]::-webkit-slider-thumb {
 .songs-panel {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
+}
+
+.songs-panel::-webkit-scrollbar {
+  width: 4px;
+}
+
+.songs-panel::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 2px;
 }
 
 .songs-panel-header {
