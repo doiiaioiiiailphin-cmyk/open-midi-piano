@@ -401,6 +401,11 @@ input[type="range"]::-webkit-slider-thumb {
   border-style: solid;
 }
 
+.file-picker.drag-over {
+  border-color: var(--accent);
+  background: rgba(99, 102, 241, 0.1);
+}
+
 #file-picker-text {
   font-size: 12px;
   color: var(--text-muted);

@@ -285,6 +285,29 @@ class App {
       }
     });
 
+    filePicker.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      filePicker.classList.add('drag-over');
+    });
+    filePicker.addEventListener('dragleave', () => {
+      filePicker.classList.remove('drag-over');
+    });
+    filePicker.addEventListener('drop', (e) => {
+      e.preventDefault();
+      filePicker.classList.remove('drag-over');
+      const file = e.dataTransfer.files[0];
+      if (file && /\.(mid|midi)$/i.test(file.name)) {
+        const dt = new DataTransfer();
+        dt.items.add(file);
+        fileInput.files = dt.files;
+        filePickerText.textContent = file.name;
+        filePicker.classList.add('has-file');
+        if (!nameInput.value) {
+          nameInput.value = file.name.replace(/\.(mid|midi)$/i, '');
+        }
+      }
+    });
+
     document.getElementById('upload-confirm').addEventListener('click', async () => {
       const file = fileInput.files[0];
       const name = nameInput.value.trim();
