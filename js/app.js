@@ -224,7 +224,16 @@ class App {
       this._preloadInstruments(song.data);
     }
 
-    this.player.play();
+    if (this.particles.active && song.data && song.data.notes.length > 0) {
+      song.data.notes.sort((a, b) => a.time - b.time);
+      const firstTime = song.data.notes[0].time;
+      this.particles.startPreview(song.data.notes, firstTime);
+      this.particles.onPreviewDone = () => {
+        this.player.play();
+      };
+    } else {
+      this.player.play();
+    }
   }
 
   async _preloadInstruments(songData) {
@@ -282,9 +291,7 @@ class App {
       const on = particleToggle.checked;
       this.particles.toggle(on);
       localStorage.setItem('particles', on ? '1' : '0');
-      on ? this._showParticlePanel() : this._hideParticlePanel();
     });
-    if (saved === '1') this._showParticlePanel();
 
     // Upload modal
     const modal = document.getElementById('upload-modal');
@@ -442,61 +449,6 @@ class App {
     const fmt = (s) => `${Math.floor(s / 60)}:${Math.floor(s % 60).toString().padStart(2, '0')}`;
     textCur.textContent = fmt(current);
     textTot.textContent = fmt(total);
-  }
-
-  _showParticlePanel() {
-    if (document.getElementById('_pp')) return;
-    const p = this.particles;
-    const div = document.createElement('div');
-    div.id = '_pp';
-    div.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;background:#1e1e2e;color:#cdd6f4;padding:12px 16px;border-radius:10px;font:12px sans-serif;box-shadow:0 4px 20px rgba(0,0,0,.5);max-height:95vh;overflow-y:auto;width:220px';
-    div.innerHTML = `
-      <div style="font-weight:600;margin-bottom:8px">粒子调参</div>
-      <div><label>每键数量</label><input type="range" id="pp_cnt" min="1" max="20" value="${p.clusterCount}"><span id="pp_cnt_v">${p.clusterCount}</span></div>
-      <div><label>扩散半径</label><input type="range" id="pp_spd" min="0" max="3" step="0.1" value="${p.spreadXY}"><span id="pp_spd_v">${p.spreadXY}</span></div>
-      <div><label>粒子大小</label><input type="range" id="pp_sz" min="0.05" max="0.8" step="0.01" value="${p.size}"><span id="pp_sz_v">${p.size}</span></div>
-      <div><label>透明度</label><input type="range" id="pp_op" min="0.1" max="2" step="0.05" value="${p.opacity}"><span id="pp_op_v">${p.opacity}</span></div>
-      <div><label>X偏移</label><input type="range" id="pp_ox" min="-5" max="5" step="0.1" value="${p.offsetX}"><span id="pp_ox_v">${p.offsetX}</span></div>
-      <div><label>Y高度</label><input type="range" id="pp_oy" min="1" max="18" step="0.1" value="${p.offsetY}"><span id="pp_oy_v">${p.offsetY}</span></div>
-      <div><label>Z偏移</label><input type="range" id="pp_oz" min="-5" max="5" step="0.1" value="${p.offsetZ}"><span id="pp_oz_v">${p.offsetZ}</span></div>
-      <div><label>颜色</label><input type="color" id="pp_clr" value="${p.color}"></div>
-      <div><label>错开时间</label><input type="range" id="pp_st" min="0" max="0.5" step="0.01" value="${p.scatterTimer}"><span id="pp_st_v">${p.scatterTimer}</span></div>
-      <button id="pp_dump" style="margin-top:6px;width:100%;padding:4px;cursor:pointer">导出参数到控制台</button>
-    `;
-    document.body.appendChild(div);
-
-    const bfs = ['pp_cnt','pp_spd','pp_sz','pp_op','pp_ox','pp_oy','pp_oz','pp_clr','pp_st'];
-    const keys = ['clusterCount','spreadXY','size','opacity','offsetX','offsetY','offsetZ','color','scatterTimer'];
-    bfs.forEach((id, i) => {
-      const el = document.getElementById(id);
-      const label = document.getElementById(id + '_v');
-      el.addEventListener('input', () => {
-        const v = id === 'pp_cnt' ? parseInt(el.value) :
-                  id === 'pp_clr' ? el.value : parseFloat(el.value);
-        p[keys[i]] = v;
-        if (label) label.textContent = v;
-      });
-    });
-
-    document.getElementById('pp_dump').addEventListener('click', () => {
-      const cfg = {
-        clusterCount: p.clusterCount,
-        spreadXY: p.spreadXY,
-        size: p.size,
-        opacity: p.opacity,
-        offsetX: p.offsetX,
-        offsetY: p.offsetY,
-        offsetZ: p.offsetZ,
-        color: p.color,
-        scatterTimer: p.scatterTimer,
-      };
-      console.log('Particle config:', JSON.stringify(cfg));
-    });
-  }
-
-  _hideParticlePanel() {
-    const el = document.getElementById('_pp');
-    if (el) el.remove();
   }
 }
 
