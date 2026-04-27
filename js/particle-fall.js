@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 
-const FALL_SPEED = 3.0;
-const FALL_DURATION = 2.0;
-const LOOK_AHEAD = 2.5;
+const FALL_SPEED = 2.8;
+const FALL_DURATION = 3.0;
+const LOOK_AHEAD = 3.5;
 const MAX_CLUSTERS_PER_FRAME = 15;
 
 function _bubbleTexture() {
@@ -29,9 +29,9 @@ export class ParticleFall {
     this._seenNotes = new Set();
     this._currentSec = 0;
     this._tex = _bubbleTexture();
-    this._clusterCount = 6;
-    this._spreadXY = 0.5;
-    this._size = 0.35;
+    this._clusterCount = 8;
+    this._spreadXY = 0.6;
+    this._size = 0.45;
 
     this._previewing = false;
     this._previewStart = 0;
