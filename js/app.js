@@ -79,12 +79,7 @@ class App {
 
     this.particles = new ParticleFall(this.keyboard.scene);
     this.particles.setKeyPosFn((midi) => this.keyboard.getKeyWorldPosition(midi));
-    this.particles.setKeyDims({
-      whiteW: this.keyboard.whiteKeyW * 0.96,
-      blackW: this.keyboard.blackKeyW,
-      whiteD: this.keyboard.whiteKeyD,
-      blackD: this.keyboard.blackKeyD,
-    });
+    this.particles.setCamera(this.keyboard.camera);
     this.particles.onHit = (midi) => {
       this.keyboard.highlightNote(midi);
       setTimeout(() => this.keyboard.unhighlightNote(midi), 80);
