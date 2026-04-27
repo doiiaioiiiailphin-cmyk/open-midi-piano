@@ -62,7 +62,7 @@ export class ParticleFall {
     this._getKeyPos = null;
     this._seenNotes = new Set();
     this._currentSec = 0;
-    this._camera = null;
+    this._keyRotation = null;
     this._previewing = false;
     this._previewStart = 0;
     this._firstTime = 0;
@@ -82,7 +82,7 @@ export class ParticleFall {
   }
 
   setKeyPosFn(fn) { this._getKeyPos = fn; }
-  setCamera(cam) { this._camera = cam; }
+  setKeyRotation(q) { this._keyRotation = q; }
 
   startPreview(notes, firstTime) {
     if (!this.active || !this._getKeyPos) return;
@@ -109,6 +109,7 @@ export class ParticleFall {
     const mesh = new THREE.Mesh(geo, _getMat());
     mesh.renderOrder = 1;
     mesh.position.set(pos.x, pos.y, pos.z);
+    if (this._keyRotation) mesh.quaternion.copy(this._keyRotation);
     this.scene.add(mesh);
     this._blocks.push({ mesh, midi, noteTime, duration, keyY: pos.y, isBlack, kw, h });
   }
@@ -174,11 +175,6 @@ export class ParticleFall {
         b.mesh.geometry.dispose();
         this._blocks.splice(idx, 1);
       }
-    }
-
-    if (this._camera) {
-      const q = this._camera.quaternion;
-      for (const b of this._blocks) b.mesh.quaternion.copy(q);
     }
 
     const threshold = this._currentSec - LOOK_AHEAD;

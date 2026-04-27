@@ -79,7 +79,7 @@ class App {
 
     this.particles = new ParticleFall(this.keyboard.scene);
     this.particles.setKeyPosFn((midi) => this.keyboard.getKeyWorldPosition(midi));
-    this.particles.setCamera(this.keyboard.camera);
+    this.particles.setKeyRotation(this.keyboard.keyGroup.quaternion.clone());
     this.particles.onHit = (midi) => {
       this.keyboard.highlightNote(midi);
       setTimeout(() => this.keyboard.unhighlightNote(midi), 80);
