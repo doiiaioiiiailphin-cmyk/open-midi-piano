@@ -103,6 +103,15 @@ class App {
       if (this.instPanel) this.instPanel.setActive(ids);
     };
 
+    this.keyboard.onRebuild = () => {
+      this.particles.clear();
+      if (this.player && this.player.isPlaying && this.player.song && this.player.song.data) {
+        const { current } = this.player.getProgress();
+        this.particles._currentSec = current;
+        this.particles.setNotes(this.player.song.data.notes, current);
+      }
+    };
+
     this.songs = [...BUILTIN_SONGS];
     const userSongs = await dbGetAll();
     for (const us of userSongs) {

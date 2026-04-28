@@ -121,6 +121,7 @@ export class PianoKeyboard {
     this.octaveOffset = 0;
     this.zoom = _loadZoom();
     this.onAnimate = null;
+    this.onRebuild = null;
 
     this.whiteKeyW = 2.2;
     this.whiteKeyH = 0.9;
@@ -533,6 +534,7 @@ export class PianoKeyboard {
     if (newStart < 0 || newStart + this.octaveCount > 8) return;
     this.startOctave = newStart;
     this._buildKeyboard();
+    if (this.onRebuild) this.onRebuild();
   }
 
   getMidiRange() {
