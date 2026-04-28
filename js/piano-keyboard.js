@@ -177,8 +177,8 @@ export class PianoKeyboard {
   }
 
   _onResize() {
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
     if (w > 0 && h > 0) {
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
@@ -187,12 +187,13 @@ export class PianoKeyboard {
   }
 
   _updateCamera() {
-    const dist = 45 / this.zoom;
-    this.camera.position.set(0, 20.25, dist);
+    const fov = 22 / this.zoom;
+    this.camera.fov = fov;
+    this.camera.position.set(0, 20.25, 45);
     this.camera.lookAt(0, 0, 3);
 
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    const w = this.container.clientWidth;
+    const h = this.container.clientHeight;
     if (w > 0 && h > 0) {
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
