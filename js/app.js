@@ -127,7 +127,21 @@ class App {
 
     this._renderSongList();
     this._bindUIEvents();
+    this._restoreSettings();
     this._loadSoundFont();
+  }
+
+  _restoreSettings() {
+    if (localStorage.getItem('showLabels') === '0') {
+      this.keyboard.showLabels = false;
+      document.getElementById('toggle-labels').checked = false;
+      this.keyboard._buildKeyboard();
+    }
+    if (localStorage.getItem('showKeybinds') === '0') {
+      this.keyboard.showKeybinds = false;
+      document.getElementById('toggle-keybinds').checked = false;
+      this.keyboard._buildKeyboard();
+    }
   }
 
   async _loadSoundFont() {
@@ -288,6 +302,42 @@ class App {
         icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
       }
     });
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'INPUT') { e.preventDefault(); this.player.togglePlayPause(); }
+    });
+
+    const settingsSidebar = document.getElementById('settings-sidebar');
+    document.getElementById('btn-settings').addEventListener('click', () => settingsSidebar.classList.remove('hidden'));
+    document.querySelector('.settings-backdrop').addEventListener('click', () => settingsSidebar.classList.add('hidden'));
+    document.getElementById('settings-close').addEventListener('click', () => settingsSidebar.classList.add('hidden'));
+
+    const expItem = document.getElementById('settings-experimental');
+    const expSub = document.getElementById('settings-sub-experimental');
+    expItem.addEventListener('click', () => { expItem.classList.toggle('open'); expSub.classList.toggle('open'); });
+
+    const particleToggle = document.getElementById('toggle-particles');
+    particleToggle.addEventListener('change', () => {
+      const on = particleToggle.checked;
+      this.particles.toggle(on);
+      localStorage.setItem('particles', on ? '1' : '0');
+    });
+
+    document.getElementById('settings-sound-mode').addEventListener('change', (e) => this.engine.setMode(e.target.value));
+
+    const toggleLabels = document.getElementById('toggle-labels');
+    toggleLabels.addEventListener('change', () => {
+      this.keyboard.showLabels = toggleLabels.checked;
+      localStorage.setItem('showLabels', toggleLabels.checked ? '1' : '0');
+      this.keyboard._buildKeyboard();
+    });
+
+    const toggleKeybinds = document.getElementById('toggle-keybinds');
+    toggleKeybinds.addEventListener('change', () => {
+      this.keyboard.showKeybinds = toggleKeybinds.checked;
+      localStorage.setItem('showKeybinds', toggleKeybinds.checked ? '1' : '0');
+      this.keyboard._buildKeyboard();
+    });
+
     // Upload modal
     const modal = document.getElementById('upload-modal');
     const fileInput = document.getElementById('upload-file');
