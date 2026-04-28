@@ -29,7 +29,7 @@ function _saveZoom(v) {
   document.cookie = `pianoZoom=${v};max-age=31536000;path=/`;
 }
 
-function _makeTopTexture(noteName, keyBind, isBlack, isCNote) {
+function _makeTopTexture(noteName, keyBind, isBlack, isCNote, showLabels, showKeybinds) {
   const canvas = document.createElement('canvas');
   canvas.width = 128;
   canvas.height = 512;
@@ -43,15 +43,19 @@ function _makeTopTexture(noteName, keyBind, isBlack, isCNote) {
     ctx.fillRect(0, 0, 128, 512);
   }
 
-  ctx.fillStyle = isBlack ? '#777' : '#555';
-  ctx.font = 'bold 40px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText(noteName, 64, 440);
+  if (showLabels) {
+    ctx.fillStyle = isBlack ? '#777' : '#555';
+    ctx.font = 'bold 40px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(noteName, 64, 440);
+  }
 
-  if (keyBind) {
+  if (showKeybinds && keyBind) {
     ctx.fillStyle = isBlack ? '#8b8bce' : '#6366f1';
     ctx.font = 'bold 36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     ctx.fillText(keyBind, 64, 380);
   }
 
@@ -122,6 +126,8 @@ export class PianoKeyboard {
     this.zoom = _loadZoom();
     this.onAnimate = null;
     this.onRebuild = null;
+    this.showLabels = true;
+    this.showKeybinds = true;
 
     this.whiteKeyW = 2.2;
     this.whiteKeyH = 0.9;
@@ -206,7 +212,7 @@ export class PianoKeyboard {
   }
 
   _createKeyMaterials(isBlack, noteName, keyBind, isCNote) {
-    const topTex = _makeTopTexture(noteName, keyBind, isBlack, isCNote);
+    const topTex = _makeTopTexture(noteName, keyBind, isBlack, isCNote, this.showLabels, this.showKeybinds);
     const emissiveMap = _makeEmissiveMap(noteName, keyBind, isBlack, isCNote);
     const sideColor = isBlack ? 0x111111 : 0xe5e4dd;
     const sideTex = _makeSideTexture(isBlack);

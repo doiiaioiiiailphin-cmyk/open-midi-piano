@@ -145,7 +145,7 @@ class App {
       console.warn('SoundFont fallback:', e);
       this._updateSfStatus('error', '音色库加载失败，已切换合成器');
       this.engine.setMode('synth');
-      document.getElementById('sound-mode').value = 'synth';
+      document.getElementById('settings-sound-mode').value = 'synth';
     }
     this._updateLoadingText('准备就绪!');
     setTimeout(() => document.getElementById('loading-overlay').classList.add('hidden'), 300);
@@ -288,38 +288,6 @@ class App {
         icon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
       }
     });
-    document.getElementById('sound-mode').addEventListener('change', (e) => this.engine.setMode(e.target.value));
-
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Space' && e.target.tagName !== 'INPUT') { e.preventDefault(); this.player.togglePlayPause(); }
-    });
-
-    // Settings sidebar
-    const settingsSidebar = document.getElementById('settings-sidebar');
-    document.getElementById('btn-settings').addEventListener('click', () => {
-      settingsSidebar.classList.remove('hidden');
-    });
-    document.querySelector('.settings-backdrop').addEventListener('click', () => {
-      settingsSidebar.classList.add('hidden');
-    });
-    document.getElementById('settings-close').addEventListener('click', () => {
-      settingsSidebar.classList.add('hidden');
-    });
-
-    const expItem = document.getElementById('settings-experimental');
-    const expSub = document.getElementById('settings-sub-experimental');
-    expItem.addEventListener('click', () => {
-      expItem.classList.toggle('open');
-      expSub.classList.toggle('open');
-    });
-
-    const particleToggle = document.getElementById('toggle-particles');
-    particleToggle.addEventListener('change', () => {
-      const on = particleToggle.checked;
-      this.particles.toggle(on);
-      localStorage.setItem('particles', on ? '1' : '0');
-    });
-
     // Upload modal
     const modal = document.getElementById('upload-modal');
     const fileInput = document.getElementById('upload-file');

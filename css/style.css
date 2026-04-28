@@ -1191,13 +1191,27 @@ input[type="range"]::-webkit-slider-thumb {
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  cursor: pointer;
   font-size: 14px;
   color: var(--text-primary);
   transition: background var(--transition);
 }
 
-.settings-item:hover {
+.settings-item select {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  outline: none;
+  cursor: pointer;
+}
+
+#settings-experimental {
+  cursor: pointer;
+}
+
+#settings-experimental:hover {
   background: var(--bg-hover);
 }
 

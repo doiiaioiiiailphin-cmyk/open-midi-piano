@@ -21,13 +21,6 @@
         <h1>Open MIDI Piano</h1>
       </div>
       <div class="header-controls">
-        <div class="control-group">
-          <label>音色</label>
-          <select id="sound-mode">
-            <option value="synth">合成器 (即时)</option>
-            <option value="sf" selected>SoundFont (高品质)</option>
-          </select>
-        </div>
         <div class="sf-status" id="sf-status">
           <span class="status-dot loading"></span>
           <span id="sf-status-text">正在加载音色库...</span>
@@ -132,6 +125,27 @@
       </div>
       <div class="settings-body">
         <div class="settings-section">
+          <div class="settings-item">
+            <span>音色引擎</span>
+            <select id="settings-sound-mode">
+              <option value="synth">合成器</option>
+              <option value="sf" selected>SoundFont</option>
+            </select>
+          </div>
+          <div class="settings-item">
+            <span>显示音符标签</span>
+            <label class="toggle-particle">
+              <input type="checkbox" id="toggle-labels" checked>
+              <span class="toggle-track"><span class="toggle-dot"></span></span>
+            </label>
+          </div>
+          <div class="settings-item">
+            <span>显示按键提示</span>
+            <label class="toggle-particle">
+              <input type="checkbox" id="toggle-keybinds" checked>
+              <span class="toggle-track"><span class="toggle-dot"></span></span>
+            </label>
+          </div>
           <div class="settings-item" id="settings-experimental">
             <span>实验性功能</span>
             <span class="settings-arrow">&#8250;</span>
