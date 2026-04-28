@@ -11,7 +11,11 @@ function _getTexture() {
   const c = document.createElement('canvas');
   c.width = 128; c.height = 256;
   const ctx = c.getContext('2d');
-  const r = 18;
+
+  ctx.shadowColor = 'rgba(129,140,248,0.6)';
+  ctx.shadowBlur = 12;
+
+  const r = 14;
   ctx.beginPath();
   ctx.moveTo(r, 0);
   ctx.lineTo(128 - r, 0);
@@ -23,16 +27,25 @@ function _getTexture() {
   ctx.lineTo(0, r);
   ctx.quadraticCurveTo(0, 0, r, 0);
   ctx.closePath();
-  const g = ctx.createLinearGradient(0, 256, 0, 0);
-  g.addColorStop(0, '#312e81');
-  g.addColorStop(0.5, '#6366f1');
-  g.addColorStop(1, '#a5b4fc');
+
+  const g = ctx.createLinearGradient(0, 0, 0, 256);
+  g.addColorStop(0, '#67e8f9');
+  g.addColorStop(0.25, '#818cf8');
+  g.addColorStop(0.6, '#6366f1');
+  g.addColorStop(1, '#3730a3');
   ctx.fillStyle = g;
   ctx.fill();
-  ctx.strokeStyle = 'rgba(165,180,252,0.5)';
-  ctx.lineWidth = 3;
+
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+
+  ctx.strokeStyle = 'rgba(165,243,252,0.7)';
+  ctx.lineWidth = 2.5;
   ctx.stroke();
+
   _tex = new THREE.CanvasTexture(c);
+  _tex.minFilter = THREE.LinearFilter;
+  _tex.magFilter = THREE.LinearFilter;
   return _tex;
 }
 
@@ -41,13 +54,13 @@ function _getMat() {
   if (_mat) return _mat;
   _mat = new THREE.MeshStandardMaterial({
     map: _getTexture(),
-    color: 0x818cf8,
-    emissive: 0x6366f1,
-    emissiveIntensity: 0.4,
-    roughness: 0.25,
-    metalness: 0.1,
+    color: 0xa5b4fc,
+    emissive: 0x818cf8,
+    emissiveIntensity: 0.6,
+    roughness: 0.15,
+    metalness: 0.05,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.95,
     side: THREE.DoubleSide,
     depthWrite: false,
   });
@@ -136,35 +149,42 @@ export class ParticleFall {
   }
 
   _emitBurst(b) {
-    for (let i = 0; i < 20; i++) {
+    const count = 60;
+    for (let i = 0; i < count; i++) {
       const mat = new THREE.SpriteMaterial({
-        color: 0xa5b4fc,
+        color: i % 3 === 0 ? 0x67e8f9 : i % 3 === 1 ? 0xa5b4fc : 0x6366f1,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
         transparent: true,
-        opacity: 0.7,
+        opacity: 0.9,
       });
       const sprite = new THREE.Sprite(mat);
-      sprite.position.set(b.keyX, b.keyY, b.keyZ);
-      sprite.scale.set(0.1, 0.1, 1);
+      const ringR = 0.15 + Math.random() * 0.15;
+      const angle = (i / count) * Math.PI * 2;
+      sprite.position.set(
+        b.keyX + Math.cos(angle) * ringR,
+        b.keyY + (Math.random() - 0.5) * 0.2,
+        b.keyZ + Math.sin(angle) * ringR
+      );
+      sprite.scale.set(0.06, 0.06, 1);
       this.scene.add(sprite);
 
-      const angle = (i / 20) * Math.PI * 2;
-      const speed = 0.02 + Math.random() * 0.04;
+      const speed = 0.03 + Math.random() * 0.06;
       const vx = Math.cos(angle) * speed;
-      const vy = (Math.random() - 0.3) * speed * 0.5;
+      const vy = (Math.random() - 0.4) * speed * 0.6;
       const vz = Math.sin(angle) * speed;
 
       let f = 0;
+      const life = 25 + Math.floor(Math.random() * 20);
       const anim = () => {
         f++;
         sprite.position.x += vx;
         sprite.position.y += vy;
         sprite.position.z += vz;
-        const s = 0.1 + f * 0.06;
+        const s = 0.06 + (f / life) * 0.35;
         sprite.scale.set(s, s, 1);
-        sprite.material.opacity = Math.max(0, 0.7 - f * 0.025);
-        if (sprite.material.opacity <= 0) {
+        sprite.material.opacity = Math.max(0, 0.9 * (1 - f / life));
+        if (f >= life) {
           this.scene.remove(sprite);
           sprite.material.dispose();
         } else {
