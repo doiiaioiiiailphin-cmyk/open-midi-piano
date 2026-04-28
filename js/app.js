@@ -294,9 +294,26 @@ class App {
       if (e.code === 'Space' && e.target.tagName !== 'INPUT') { e.preventDefault(); this.player.togglePlayPause(); }
     });
 
+    // Settings sidebar
+    const settingsSidebar = document.getElementById('settings-sidebar');
+    document.getElementById('btn-settings').addEventListener('click', () => {
+      settingsSidebar.classList.remove('hidden');
+    });
+    document.querySelector('.settings-backdrop').addEventListener('click', () => {
+      settingsSidebar.classList.add('hidden');
+    });
+    document.getElementById('settings-close').addEventListener('click', () => {
+      settingsSidebar.classList.add('hidden');
+    });
+
+    const expItem = document.getElementById('settings-experimental');
+    const expSub = document.getElementById('settings-sub-experimental');
+    expItem.addEventListener('click', () => {
+      expItem.classList.toggle('open');
+      expSub.classList.toggle('open');
+    });
+
     const particleToggle = document.getElementById('toggle-particles');
-    const saved = localStorage.getItem('particles');
-    if (saved === '1') { particleToggle.checked = true; this.particles.toggle(true); }
     particleToggle.addEventListener('change', () => {
       const on = particleToggle.checked;
       this.particles.toggle(on);

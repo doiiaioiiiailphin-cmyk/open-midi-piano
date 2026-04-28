@@ -709,6 +709,30 @@ input[type="range"]::-webkit-slider-thumb {
   justify-content: flex-end;
 }
 
+.btn-settings {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.btn-settings svg {
+  width: 18px;
+  height: 18px;
+}
+
+.btn-settings:hover {
+  color: rgba(255,255,255,0.8);
+  background: rgba(255,255,255,0.08);
+}
+
 .controls-center {
   flex: 2;
   display: flex;
@@ -1045,23 +1069,12 @@ input[type="range"]::-webkit-slider-thumb {
 .toggle-particle {
   display: flex;
   align-items: center;
-  gap: 6px;
   cursor: pointer;
   user-select: none;
 }
 
 .toggle-particle input {
   display: none;
-}
-
-.toggle-label {
-  font-size: 16px;
-  color: var(--text-muted);
-  transition: color var(--transition);
-}
-
-.toggle-particle input:checked ~ .toggle-label {
-  color: var(--accent);
 }
 
 .toggle-track {
@@ -1092,4 +1105,127 @@ input[type="range"]::-webkit-slider-thumb {
 
 .toggle-particle input:checked ~ .toggle-track .toggle-dot {
   transform: translateX(14px);
+}
+
+.settings-sidebar {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings-sidebar.hidden {
+  display: none;
+}
+
+.settings-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.3);
+}
+
+.settings-panel {
+  position: relative;
+  width: 300px;
+  height: 100%;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: slideInRight 0.2s ease;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.settings-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.settings-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all var(--transition);
+}
+
+.settings-close:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.settings-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 0;
+}
+
+.settings-section {
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: background var(--transition);
+}
+
+.settings-item:hover {
+  background: var(--bg-hover);
+}
+
+.settings-arrow {
+  font-size: 18px;
+  color: var(--text-muted);
+  transition: transform var(--transition);
+}
+
+.settings-item.open .settings-arrow {
+  transform: rotate(90deg);
+}
+
+.settings-sub {
+  display: none;
+  background: var(--bg-tertiary);
+}
+
+.settings-sub.open {
+  display: block;
+}
+
+.settings-sub .settings-item {
+  padding-left: 36px;
+  font-size: 13px;
+  cursor: default;
+}
+
+.settings-sub .settings-item:hover {
+  background: transparent;
 }
