@@ -14,6 +14,10 @@
   </script>
 </head>
 <body>
+  <div class="piano-container" id="piano-container">
+    <div class="piano" id="piano"></div>
+  </div>
+
   <div id="app">
     <header class="app-header">
       <div class="logo">
@@ -47,9 +51,6 @@
       </aside>
 
       <section class="piano-section">
-        <div class="piano-container" id="piano-container">
-          <div class="piano" id="piano"></div>
-        </div>
         <div class="mac-player-bar" id="player-bar">
           <div class="progress-row">
             <span class="time-display" id="time-current">0:00</span>
@@ -61,8 +62,6 @@
               </div>
             </div>
             <span class="time-display" id="time-total">0:00</span>
-            <span id="progress-text" style="display: none;">0:00 / 0:00</span>
-            <span id="note-display" style="display: none;"></span>
           </div>
 
           <div class="controls-row">

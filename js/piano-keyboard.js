@@ -177,8 +177,8 @@ export class PianoKeyboard {
   }
 
   _onResize() {
-    const w = this.container.clientWidth;
-    const h = this.container.clientHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
     if (w > 0 && h > 0) {
       this.camera.aspect = w / h;
       this.camera.updateProjectionMatrix();
@@ -187,22 +187,17 @@ export class PianoKeyboard {
   }
 
   _updateCamera() {
-    const startMidi = this.startOctave * 12 + 12;
-    const endMidi = (this.startOctave + this.octaveCount) * 12 + 12;
-    let whiteCount = 0;
-    for (let midi = startMidi; midi <= endMidi; midi++) {
-      if (WHITE_NOTES.includes(midi % 12)) whiteCount++;
-    }
-    const totalW = whiteCount * this.whiteKeyW;
-    this.camera.position.set(0, 20.25, 45);
+    const dist = 45 / this.zoom;
+    this.camera.position.set(0, 20.25, dist);
     this.camera.lookAt(0, 0, 3);
 
-    const newH = Math.round(420 * this.zoom);
-    this.container.style.height = newH + 'px';
-    const w = this.container.clientWidth;
-    this.camera.aspect = w / newH;
-    this.camera.updateProjectionMatrix();
-    this.renderer.setSize(w, newH);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    if (w > 0 && h > 0) {
+      this.camera.aspect = w / h;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(w, h);
+    }
   }
 
   _createKeyMaterials(isBlack, noteName, keyBind, isCNote) {
