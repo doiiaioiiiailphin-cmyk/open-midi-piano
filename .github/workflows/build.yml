@@ -15,6 +15,7 @@ jobs:
         uses: actions/setup-node@v4
         with: { node-version: '22' }
       - run: npm install
+      - run: node -e "const fs=require('fs');fs.mkdirSync('dist/js',{recursive:true});fs.mkdirSync('dist/css',{recursive:true});fs.mkdirSync('dist/assets',{recursive:true});fs.copyFileSync('index.html','dist/index.html');fs.readdirSync('js').forEach(f=>fs.copyFileSync('js/'+f,'dist/js/'+f));fs.readdirSync('css').forEach(f=>fs.copyFileSync('css/'+f,'dist/css/'+f))"
       - name: Build
         uses: tauri-apps/tauri-action@v0
         with:
@@ -46,6 +47,7 @@ jobs:
         uses: actions/setup-node@v4
         with: { node-version: '22' }
       - run: npm install
+      - run: node -e "const fs=require('fs');fs.mkdirSync('dist/js',{recursive:true});fs.mkdirSync('dist/css',{recursive:true});fs.mkdirSync('dist/assets',{recursive:true});fs.copyFileSync('index.html','dist/index.html');fs.readdirSync('js').forEach(f=>fs.copyFileSync('js/'+f,'dist/js/'+f));fs.readdirSync('css').forEach(f=>fs.copyFileSync('css/'+f,'dist/css/'+f))"
       - name: Build
         uses: tauri-apps/tauri-action@v0
         env:
@@ -60,6 +62,7 @@ jobs:
         with: { node-version: '22' }
       - run: sudo apt-get update && sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev
       - run: npm install
+      - run: node -e "const fs=require('fs');fs.mkdirSync('dist/js',{recursive:true});fs.mkdirSync('dist/css',{recursive:true});fs.mkdirSync('dist/assets',{recursive:true});fs.copyFileSync('index.html','dist/index.html');fs.readdirSync('js').forEach(f=>fs.copyFileSync('js/'+f,'dist/js/'+f));fs.readdirSync('css').forEach(f=>fs.copyFileSync('css/'+f,'dist/css/'+f))"
       - name: Build
         uses: tauri-apps/tauri-action@v0
         env:
