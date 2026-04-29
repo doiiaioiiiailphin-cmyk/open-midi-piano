@@ -34,6 +34,12 @@
 
 ## 快速开始
 
+### 直接使用
+
+前往 [Releases](https://github.com/doiiaioiiiailphin-cmyk/open-midi-piano/releases) 下载最新安装包，支持 Windows 10/11。
+
+### 浏览器运行
+
 ```bash
 # 克隆仓库
 git clone https://github.com/doiiaioiiiailphin-cmyk/open-midi-piano.git
