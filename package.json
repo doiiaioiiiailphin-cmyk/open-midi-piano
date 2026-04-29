@@ -1,4 +1,9 @@
 {
+  "name": "open-midi-piano",
+  "private": true,
+  "scripts": {
+    "tauri": "tauri"
+  },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1"
   }
