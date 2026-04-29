@@ -18,24 +18,6 @@ jobs:
       - run: node -e "const fs=require('fs');fs.mkdirSync('dist/js',{recursive:true});fs.mkdirSync('dist/css',{recursive:true});fs.mkdirSync('dist/assets',{recursive:true});fs.copyFileSync('index.html','dist/index.html');fs.readdirSync('js').forEach(f=>fs.copyFileSync('js/'+f,'dist/js/'+f));fs.readdirSync('css').forEach(f=>fs.copyFileSync('css/'+f,'dist/css/'+f))"
       - name: Build
         uses: tauri-apps/tauri-action@v0
-        with:
-          args: --target x86_64-pc-windows-msvc
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  windows-x86:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with: { node-version: '22' }
-      - run: npm install
-      - run: rustup target add i686-pc-windows-msvc
-      - name: Build
-        uses: tauri-apps/tauri-action@v0
-        with:
-          args: --target i686-pc-windows-msvc
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
